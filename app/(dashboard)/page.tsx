@@ -181,15 +181,14 @@ export default function DashboardPage() {
         .logout-btn:hover { background: #fff1ec; }
 
         /* Main */
-        .main {
-          margin-top: var(--nav-h);
-          padding: 24px 16px 56px;
-          flex: 1;
-          max-width: 520px;
-          width: 100%;
-          margin-left: auto;
-          margin-right: auto;
-        }
+.main {
+  margin-top: var(--nav-h);
+  padding: 24px 16px 56px;
+  width: 100%;
+  max-width: 520px;
+  margin-inline: auto;
+  box-sizing: border-box;
+}
 
         .page-header { margin-bottom: 20px; }
         .page-label { font-size: 11px; font-weight: 500; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }

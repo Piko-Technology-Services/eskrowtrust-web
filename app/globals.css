@@ -1,12 +1,14 @@
 @import "tailwindcss";
 
-.main {
-  margin-top: var(--nav-h);
-  padding: 24px 16px 56px;
-  width: 100%;
-  max-width: 520px;
-  margin-inline: auto;
+/* FIX MOBILE SIZING ISSUES */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+}
+
+body {
+  overflow-x: hidden;
 }
 
 :root {
