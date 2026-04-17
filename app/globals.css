@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+.main {
+  margin-top: var(--nav-h);
+  padding: 24px 16px 56px;
+  width: 100%;
+  max-width: 520px;
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
