@@ -31,6 +31,7 @@ const baseStyles = `
 .balance-pill {
   font-size:12px; background:var(--bg);
   padding:5px 10px; border-radius:20px;
+  color: var(--text-primary)
 }
 
 .main {
