@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import { removeToken } from '@/lib/auth';
+import path from "path";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -44,10 +45,10 @@ const ReceiveIcon = () => (
 );
 
 const navLinks = [
-  { label: "Home", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> },
-  { label: "Transactions", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> },
-  { label: "Profile", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
-  { label: "Settings", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> },
+  { label: "Home", path: "/", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> },
+  { label: "Transactions", path: "/transactions", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> },
+  { label: "Profile", path: "/profile", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
+  { label: "Settings", path: "/settings", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> },
 ];
 
 const transactions = [
@@ -67,6 +68,8 @@ export default function DashboardPage() {
   const [balanceVisible, setBalanceVisible] = useState(true);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -132,7 +135,13 @@ export default function DashboardPage() {
           background: var(--accent); color: #fff; font-size: 12px; font-weight: 600;
           display: flex; align-items: center; justify-content: center;
           letter-spacing: 0.5px; flex-shrink: 0;
+          cursor: pointer;
         }
+        
+        .avatar:hover { 
+          background: white; color: var(--accent); border: 1px solid var(--accent);
+          
+          }
 
         .topbar-logout {
           display: none; align-items: center; gap: 6px;
@@ -281,8 +290,8 @@ export default function DashboardPage() {
           </div>
           <nav className="sidebar-nav">
             {navLinks.map((link) => (
-              <button key={link.label} className={`nav-item ${activeNav === link.label ? "active" : ""}`}
-                onClick={() => { setActiveNav(link.label); setSidebarOpen(false); }}>
+              <button  key={link.label} className={`nav-item ${activeNav === link.label ? "active" : ""}`}
+                onClick={() => { setActiveNav(link.label); setSidebarOpen(false); router.push(link.path); }}>
                 {link.icon}{link.label}
               </button>
             ))}
@@ -297,7 +306,7 @@ export default function DashboardPage() {
           <button className="icon-btn" onClick={() => setSidebarOpen(true)} aria-label="Open menu"><MenuIcon /></button>
           <div className="topbar-logo">arc<span>.</span>hq</div>
           <button className="topbar-logout" onClick={handleLogout}><LogoutIcon />Log out</button>
-          <div className="avatar">JD</div>
+          <div className="avatar" onClick={() => router.push('/profile')}>JD</div>
         </header>
 
         {/* Content */}
@@ -333,14 +342,14 @@ export default function DashboardPage() {
 
           {/* Send / Receive */}
           <div className="action-row">
-            <div className="action-card">
+            <div className="action-card" onClick={() => router.push('/send')}>
               <div className="action-icon send"><SendIcon /></div>
               <div>
                 <div className="action-label">Send Money</div>
                 <div className="action-sub">Transfer funds</div>
               </div>
             </div>
-            <div className="action-card">
+            <div className="action-card" onClick={() => router.push('/deposit')}>
               <div className="action-icon receive"><ReceiveIcon /></div>
               <div>
                 <div className="action-label">Add Money</div>
