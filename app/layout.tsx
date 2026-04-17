@@ -15,7 +15,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <meta name="viewport" content="width=device-width, initial-scale=1" />
       <body className="bg-gray-50 text-gray-900 antialiased">
         {children}
       </body>

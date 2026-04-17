@@ -47,6 +47,16 @@ export default function LoginPage() {
 
         html, body { height: 100%; background: var(--bg); }
 
+        .main {
+  margin-top: var(--nav-h);
+  padding: 24px 16px 56px;
+  flex: 1;
+  max-width: 520px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
         .auth-shell {
           font-family: 'DM Sans', sans-serif;
           min-height: 100vh;
