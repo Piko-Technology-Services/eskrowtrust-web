@@ -3,8 +3,9 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'Auth App',
-  description: 'Laravel + Next.js Authentication',
+  title: 'Eskrowtrust',
+  description: 'Global Trust in Every Transaction',
+  viewport: 'width=device-width, initial-scale=1',
 };
 
 export default function RootLayout({
