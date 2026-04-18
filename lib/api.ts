@@ -56,6 +56,10 @@ export const WalletAPI = {
       method: 'POST',
       body: payload,
     }),
+
+  verifyDeposit: (reference: string) =>
+    apiRequest(`/wallet/deposit/verify?reference=${reference}`),
+  
 };
 
 // AUTH HELPERS

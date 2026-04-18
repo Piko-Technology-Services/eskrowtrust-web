@@ -6,6 +6,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const SHARED_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
@@ -134,11 +135,19 @@ const SHARED_STYLES = `
 // ─── FAILURE ──────────────────────────────────────────────────────────────────
 
 export function AddMoneyFailedPage() {
-  const router  = useRouter();
-  const amount  = '$5,000.00';
-  const method  = 'Card';
-  const reason  = 'Your card was declined. Please check your card details or try a different payment method.';
-  const ref     = 'DEP-01JDKRA7MNX2';
+  const router = useRouter();
+  const [data, setData] = useState<any>(null);
+  const amount = data?.amount || '0.00';
+  const reason = data?.reasonForFailure || 'Transaction failed';
+  const ref = data?.reference || 'N/A';
+  const method = data?.mobileMoneyDetails?.operator || 'Mobile Money';
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem('depositResult');
+    if (stored) {
+      setData(JSON.parse(stored));
+    }
+  }, []);
 
   return (
     <>
@@ -148,7 +157,7 @@ export function AddMoneyFailedPage() {
 
           <div className="icon-ring failure">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </div>
 

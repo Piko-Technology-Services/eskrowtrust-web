@@ -1,13 +1,8 @@
 'use client';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// app/(dashboard)/deposit/success/page.tsx
-// app/(dashboard)/deposit/failed/page.tsx
-// ─────────────────────────────────────────────────────────────────────────────
-
+import { WalletAPI } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-
 
 const SHARED_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
@@ -131,92 +126,88 @@ const SHARED_STYLES = `
   .tip-title { font-size: 12px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
   .tip-body  { font-size: 12px; color: var(--muted); line-height: 1.5; }
 `;
+// ─── PENDING PAGE ─────────────────────────────────────────────────────────────
 
-// ─── SUCCESS ──────────────────────────────────────────────────────────────────
-
-export function AddMoneySuccessPage() {
+export default function AddMoneyPendingPage() {
   const router = useRouter();
   const [data, setData] = useState<any>(null);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('deposit_success');
-
+    const stored = sessionStorage.getItem('depositResult');
     if (stored) {
-      const parsed = JSON.parse(stored);
-      setData(parsed);
-      console.log("Loaded deposit success data:", parsed);
-    } else {
-      router.push('/deposit');
+      setData(JSON.parse(stored));
     }
   }, []);
 
-  // ⛔ STOP rendering until data is ready
-if (!data) {
-  return (
-    <div className="shell">
-      <p>Loading transaction...</p>
-    </div>
-  );
-}
+  useEffect(() => {
+  const interval = setInterval(async () => {
+    const res = await WalletAPI.verifyDeposit(data.reference);
 
-  // ✅ NOW it's safe
-  const amount = `${data.currency} ${parseFloat(data.amount).toLocaleString(undefined, {
-    minimumFractionDigits: 2
-  })}`;
+    console.log("Verification response:", res);
 
-  const method =
-    data.type === 'mobile-money'
-      ? `Mobile Money (${data.mobileMoneyDetails?.operator?.toUpperCase()})`
-      : 'Card';
+    if (res.data.status === 'successful') {
+        sessionStorage.setItem(
+            'deposit_success',
+            JSON.stringify(res.data)
+        );
+      router.push('/deposit/success');
+    }
 
-  const ref = data.reference;
+    if (res.data.status === 'failed') {
+      router.push('/deposit/failed');
+    }
+  }, 5000);
 
-  const date = new Date(data.completedAt).toLocaleString('en-GB', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  });
+  return () => clearInterval(interval);
+}, [data]);
 
-  const phone = data.mobileMoneyDetails?.phone;
-  const name = data.mobileMoneyDetails?.accountName;
-  const txnId = data.mobileMoneyDetails?.operatorTransactionId;
-  const fee = data.fee;
+  if (!data) {
+    return null; // or loader
+  }
 
-
+  const amount   = `ZMW ${parseFloat(data.amount).toLocaleString()}`;
+  const ref      = data.reference;
+  const phone    = data.mobileMoneyDetails?.phone;
+  const operator = data.mobileMoneyDetails?.operator?.toUpperCase();
+  const accName = data.mobileMoneyDetails?.accountName || 'N/A';
 
   return (
     <>
       <style>{SHARED_STYLES}</style>
+
       <div className="shell">
         <div className="card">
 
+          {/* Icon */}
           <div className="icon-ring success">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <polyline points="20 6 9 17 4 12" />
+              <path d="M12 8v4l3 3"/>
+              <circle cx="12" cy="12" r="10"/>
             </svg>
           </div>
 
-          <div className="status-eyebrow success">Deposit Confirmed</div>
-          <div className="status-title">Money Added!</div>
-          <div className="status-desc">Your wallet has been topped up successfully.</div>
+          {/* Title */}
+          <div className="status-eyebrow success">Awaiting Confirmation</div>
+          {/* <div className="status-title">Complete Payment</div> */}
 
-          
+          {/* Instructions */}
+          <div className="status-desc">
+            A payment request has been sent to your phone.
+            Please approve it to complete your deposit.
+          </div>
 
+          {/* Receipt */}
           <div className="receipt">
             <div className="receipt-row">
-              <span className="receipt-key">Amount added</span>
-              <span className="receipt-val amount success">{amount}</span>
+              <span className="receipt-key">Amount</span>
+              <span className="receipt-val amount">{amount}</span>
             </div>
 
             <div className="receipt-divider" />
 
             <div className="receipt-row">
               <span className="receipt-key">Via</span>
-              <span className="method-tag">{method}</span>
-            </div>
-
-            <div className="receipt-row">
-              <span className="receipt-key">Account</span>
-              <span className="receipt-val">{name}</span>
+              <span className="method-tag">{operator || 'Mobile Money'}</span>
             </div>
 
             <div className="receipt-row">
@@ -225,47 +216,43 @@ if (!data) {
             </div>
 
             <div className="receipt-row">
-              <span className="receipt-key">Transaction ID</span>
-              <span className="receipt-val">{txnId || '—'}</span>
-            </div>
-
-            <div className="receipt-row">
-              <span className="receipt-key">Fee</span>
-              <span className="receipt-val">
-                {fee ? `${data.currency} ${fee}` : 'Free'}
-              </span>
-            </div>
-
-            <div className="receipt-row">
-              <span className="receipt-key">Date</span>
-              <span className="receipt-val">{date}</span>
+              <span className="receipt-key">MNO Account Name</span>
+              <span className="receipt-val">{accName}</span>
             </div>
 
             <div className="receipt-row">
               <span className="receipt-key">Status</span>
-              <span className="receipt-val" style={{ color: 'var(--green)', fontWeight: 600 }}>
-                Completed ✓
+              <span className="receipt-val" style={{ color: '#2d6a4f', fontWeight: 600 }}>
+                Pending…
               </span>
             </div>
           </div>
 
+          {/* Tip */}
+          <div className="tip-box">
+            <div className="tip-title">📲 What to do</div>
+            <div className="tip-body">
+              Check your phone and enter your PIN to approve the transaction.
+              This usually takes a few seconds.
+            </div>
+          </div>
+
+          {/* Actions */}
           <button className="btn-primary" onClick={() => router.push('/')}>
-            Back to Wallet
-          </button>
-          <button className="btn-secondary" onClick={() => router.push('/deposit')}>
-            Add More
+            I’ve Completed Payment
           </button>
 
+          <button className="btn-secondary" onClick={() => router.push('/deposit')}>
+            Cancel & Try Again
+          </button>
+
+          {/* Reference */}
           <div className="ref-tag">
             Ref: <span className="ref-code">{ref}</span>
           </div>
+
         </div>
       </div>
     </>
   );
 }
-
-
-// ─── Default export — swap as needed ─────────────────────────────────────────
-export default AddMoneySuccessPage;
-// export default AddMoneyFailedPage;

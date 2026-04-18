@@ -110,29 +110,34 @@ export default function AddMoneyPage() {
     setLoading(true);
 
     try {
-      const res = await WalletAPI.deposit({
-        amount: parseFloat(amount),
-        phone: phone,
-        mno: provider
-      });
+        const res = await WalletAPI.deposit({
+          amount: parseFloat(amount),
+          phone: phone,
+          mno: provider
+        });
 
-      const data = res.data;
+        const data = res.data;
 
-      // IMPORTANT: send user to Lenco checkout
-      // if (data.checkout_url) {
-      //   window.location.href = data.checkout_url;
-      //   return;
-      // }
+        console.log("Deposit response:", res);
 
-      // fallback
-      // router.push('/deposit/failed');
+        // Save FULL response
+        sessionStorage.setItem('depositResult', JSON.stringify(data));
 
-    } catch (err: any) {
-      console.error("Deposit error:", err);
-      router.push('/deposit/failed');
-    } finally {
-      setLoading(false);
-    }
+        if (data.status === 'failed') {
+          router.push('/deposit/failed');
+          return;
+        }
+
+        if (data.status === 'pending' || data.status === 'pay-offline') {
+          router.push('/deposit/pending');
+          return;
+        }
+
+      } catch (err: any) {
+        console.error("Deposit error:", err);
+      } finally {
+        setLoading(false);
+      }
   };
 
   return (
