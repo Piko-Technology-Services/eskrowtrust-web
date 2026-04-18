@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { redirect, useRouter } from 'next/navigation';
 import { removeToken } from '@/lib/auth';
 import path from "path";
+import { DashboardAPI } from "@/lib/api";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -44,30 +45,60 @@ const ReceiveIcon = () => (
   </svg>
 );
 
+
+
 const navLinks = [
-  { label: "Home", path: "/", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> },
-  { label: "Transactions", path: "/transactions", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> },
-  { label: "Profile", path: "/profile", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
-  { label: "Settings", path: "/settings", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> },
+  { label: "Home", path: "/", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg> },
+  { label: "Transactions", path: "/transactions", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg> },
+  { label: "Profile", path: "/profile", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg> },
+  { label: "Settings", path: "/settings", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg> },
 ];
 
-const transactions = [
-  { name: "Netflix Subscription", date: "Today, 9:41 AM",  amount: "-$15.99",   out: true,  avatar: "NF" },
-  { name: "Salary Deposit",       date: "Today, 8:00 AM",  amount: "+$3,200.00", out: false, avatar: "SD" },
-  { name: "Uber Ride",            date: "Yesterday",        amount: "-$12.40",   out: true,  avatar: "UB" },
-  { name: "John Doe",             date: "Yesterday",        amount: "+$250.00",  out: false, avatar: "JD" },
-  { name: "Amazon Purchase",      date: "Apr 12",           amount: "-$89.00",   out: true,  avatar: "AZ" },
-  { name: "Freelance Payment",    date: "Apr 11",           amount: "+$600.00",  out: false, avatar: "FP" },
-];
+// const transactions = [
+//   { name: "Netflix Subscription", date: "Today, 9:41 AM",  amount: "-$15.99",   out: true,  avatar: "NF" },
+//   { name: "Salary Deposit",       date: "Today, 8:00 AM",  amount: "+$3,200.00", out: false, avatar: "SD" },
+//   { name: "Uber Ride",            date: "Yesterday",        amount: "-$12.40",   out: true,  avatar: "UB" },
+//   { name: "John Doe",             date: "Yesterday",        amount: "+$250.00",  out: false, avatar: "JD" },
+//   { name: "Amazon Purchase",      date: "Apr 12",           amount: "-$89.00",   out: true,  avatar: "AZ" },
+//   { name: "Freelance Payment",    date: "Apr 11",           amount: "+$600.00",  out: false, avatar: "FP" },
+// ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-  const [sidebarOpen, setSidebarOpen]     = useState(false);
-  const [activeNav, setActiveNav]         = useState("Home");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeNav, setActiveNav] = useState("Home");
   const [balanceVisible, setBalanceVisible] = useState(true);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  const [wallet, setWallet] = useState<any>(null);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        const res = await DashboardAPI.get();
+
+        const data = res.data;
+
+        setWallet(data.wallet);
+        setTransactions(data.recent_transactions);
+        setUser(data.user);
+
+      } catch (err) {
+        console.error("Dashboard error:", err);
+        router.push("/login"); // token expired / invalid
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDashboard();
+  }, []);
 
 
 
@@ -289,7 +320,7 @@ export default function DashboardPage() {
           </div>
           <nav className="sidebar-nav">
             {navLinks.map((link) => (
-              <button  key={link.label} className={`nav-item ${activeNav === link.label ? "active" : ""}`}
+              <button key={link.label} className={`nav-item ${activeNav === link.label ? "active" : ""}`}
                 onClick={() => { setActiveNav(link.label); setSidebarOpen(false); router.push(link.path); }}>
                 {link.icon}{link.label}
               </button>
@@ -312,7 +343,7 @@ export default function DashboardPage() {
         <main className="main">
           <div className="page-header">
             <p className="page-label">Wallet</p>
-            <h1 className="page-title">Good morning, Jane.</h1>
+            <h1 className="page-title">Good morning, <br/> {user?.name || "User"}.</h1>
           </div>
 
           {/* Balance Card */}
@@ -322,7 +353,9 @@ export default function DashboardPage() {
                 <div>
                   <div className="bc-label">Account Balance</div>
                   {balanceVisible
-                    ? <div className="bc-amount">$1,000,000.00</div>
+                    ? <div className="bc-amount">${wallet?.balance
+                      ? Number(wallet.balance).toLocaleString()
+                      : "0.00"}</div>
                     : <div className="bc-hidden">••••••</div>}
                 </div>
                 <button className="eye-btn" onClick={() => setBalanceVisible(v => !v)} aria-label="Toggle balance visibility">
@@ -362,18 +395,40 @@ export default function DashboardPage() {
             <div className="section-title">Transaction History</div>
             <a href="/transactions" className="section-link">See all →</a>
           </div>
+
+          {transactions ? (<>
           <div className="txn-list">
             {transactions.map((t) => (
-              <div className="txn-item" key={t.name + t.date}>
-                <div className="txn-avatar">{t.avatar}</div>
-                <div className="txn-info">
-                  <div className="txn-name">{t.name}</div>
-                  <div className="txn-date">{t.date}</div>
+              <div className="txn-item" key={t.id}>
+                <div className="txn-avatar">
+                  {t.type === "deposit" ? "IN" : "OUT"}
                 </div>
-                <div className={`txn-amount ${t.out ? "out" : "in"}`}>{t.amount}</div>
+
+                <div className="txn-info">
+                  <div className="txn-name">
+                    {t.type === "deposit" ? "Deposit" : "Withdrawal"}
+                  </div>
+                  <div className="txn-date">
+                    {new Date(t.created_at).toLocaleString()}
+                  </div>
+                </div>
+
+                <div className={`txn-amount ${t.type === "withdrawal" ? "out" : "in"}`}>
+                  {t.type === "withdrawal" ? "-" : "+"}$
+                  {Number(t.amount).toLocaleString()}
+                </div>
               </div>
             ))}
           </div>
+          </>) : (<>
+          
+           <div className="txn-list">
+              <div className="txn-item">
+                <div className="txn-name">No Recent Transactions</div>
+              </div>
+            </div>
+          </>)}
+         
         </main>
       </div>
     </>

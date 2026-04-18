@@ -19,7 +19,7 @@ export default function LoginPage() {
     try {
       const res = await AuthAPI.login(form);
       setToken(res.token);
-      router.push('/');
+      router.replace('/');
     } catch (err: any) {
       setError(err.message || 'Login failed');
     } finally {

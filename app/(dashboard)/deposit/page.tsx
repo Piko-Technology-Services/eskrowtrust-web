@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { WalletAPI } from "@/lib/api";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const BackIcon = () => (
@@ -64,7 +65,7 @@ const quickAmounts = [1000, 2500, 5000, 10000];
 
 export default function AddMoneyPage() {
   const router = useRouter();
-  const [method, setMethod]       = useState('bank_transfer');
+  const [method, setMethod]       = useState('mobile_money');
   const [amount, setAmount]       = useState('');
   const [phone, setPhone]         = useState('');
   const [provider, setProvider]   = useState('');
@@ -84,16 +85,38 @@ export default function AddMoneyPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-    if (!amount || parseFloat(amount) <= 0) return;
-    setLoading(true);
-    // Replace with real API call
-    await new Promise(r => setTimeout(r, 1800));
-    const success = Math.random() > 0.2;
+const handleSubmit = async (e: any) => {
+  e.preventDefault();
+
+  if (!amount || parseFloat(amount) <= 0) return;
+
+  setLoading(true);
+
+  try {
+    const res = await WalletAPI.deposit({
+      amount: parseFloat(amount),
+      phone: phone,
+      mno: provider
+    });
+
+    const data = res.data;
+
+    // IMPORTANT: send user to Lenco checkout
+    // if (data.checkout_url) {
+    //   window.location.href = data.checkout_url;
+    //   return;
+    // }
+
+    // fallback
+    // router.push('/deposit/failed');
+
+  } catch (err: any) {
+    console.error("Deposit error:", err);
+    router.push('/deposit/failed');
+  } finally {
     setLoading(false);
-    router.push(success ? '/deposit/success' : '/deposit/failed');
-  };
+  }
+};
 
   return (
     <>
@@ -280,63 +303,6 @@ export default function AddMoneyPage() {
 
             <div className="divider" />
 
-            {/* Method */}
-            <div className="section-label">Payment Method</div>
-            <div className="method-list">
-              {methods.map(m => (
-                <div
-                  key={m.id}
-                  className={`method-item ${method === m.id ? 'active' : ''}`}
-                  onClick={() => setMethod(m.id)}
-                >
-                  <div className="method-icon-wrap">{m.icon}</div>
-                  <div className="method-text">
-                    <div className="method-name">{m.label}</div>
-                    <div className="method-sub">{m.sub}</div>
-                  </div>
-                  <div className="method-eta">{m.eta}</div>
-                  <div className="method-radio">
-                    {method === m.id && <CheckIcon />}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Bank Transfer — show virtual account */}
-            {method === 'bank_transfer' && (
-              <>
-                <div className="section-label">Your Virtual Account</div>
-                <div className="va-card">
-                  <div className="va-header">Transfer to this account</div>
-                  <div className="va-row">
-                    <span className="va-key">Account Number</span>
-                    <div className="va-number-row">
-                      <span className="va-number">{virtualAccount.number}</span>
-                      <button
-                        type="button"
-                        className={`copy-btn ${copied ? 'copied' : ''}`}
-                        onClick={handleCopy}
-                      >
-                        <CopyIcon />{copied ? 'Copied!' : 'Copy'}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="va-row">
-                    <span className="va-key">Bank</span>
-                    <span className="va-val">{virtualAccount.bank}</span>
-                  </div>
-                  <div className="va-row">
-                    <span className="va-key">Account Name</span>
-                    <span className="va-val">{virtualAccount.name}</span>
-                  </div>
-                  <div className="va-note">
-                    Transfer any amount to the account above. Your wallet balance will be credited instantly once the payment is confirmed.
-                  </div>
-                </div>
-                <p className="info-note">No further action needed — just complete your transfer.</p>
-              </>
-            )}
-
             {/* Mobile Money */}
             {method === 'mobile_money' && (
               <div className="fields">
@@ -355,46 +321,14 @@ export default function AddMoneyPage() {
                 </div>
               </div>
             )}
-
-            {/* Card */}
-            {method === 'card' && (
-              <div className="fields">
-                <div className="field">
-                  <label>Card Number</label>
-                  <input
-                    type="text"
-                    placeholder="0000 0000 0000 0000"
-                    maxLength={19}
-                    value={cardNo}
-                    onChange={e => setCardNo(e.target.value.replace(/\D/g,'').replace(/(.{4})/g,'$1 ').trim())}
-                    required
-                  />
-                </div>
-                <div className="field">
-                  <label>Cardholder Name</label>
-                  <input type="text" placeholder="Jane Doe" value={cardName} onChange={e => setCardName(e.target.value)} required />
-                </div>
-                <div className="field-row">
-                  <div className="field">
-                    <label>Expiry</label>
-                    <input type="text" placeholder="MM/YY" maxLength={5} value={expiry} onChange={e => setExpiry(e.target.value)} required />
-                  </div>
-                  <div className="field">
-                    <label>CVV</label>
-                    <input type="password" placeholder="•••" maxLength={4} value={cvv} onChange={e => setCvv(e.target.value)} required />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {method !== 'bank_transfer' && (
+            
               <button type="submit" className="submit-btn" disabled={loading || !amount}>
                 {loading
                   ? <><div className="spinner" />Processing…</>
                   : <>Pay {amount ? `$${parseFloat(amount).toLocaleString('en', { minimumFractionDigits: 2 })}` : '$0.00'}</>
                 }
               </button>
-            )}
+          
 
           </form>
         </main>
@@ -402,3 +336,111 @@ export default function AddMoneyPage() {
     </>
   );
 }
+
+
+//  {/* Method */}
+//             <div className="section-label">Payment Method</div>
+//             <div className="method-list">
+//               {methods.map(m => (
+//                 <div
+//                   key={m.id}
+//                   className={`method-item ${method === m.id ? 'active' : ''}`}
+//                   onClick={() => setMethod(m.id)}
+//                 >
+//                   <div className="method-icon-wrap">{m.icon}</div>
+//                   <div className="method-text">
+//                     <div className="method-name">{m.label}</div>
+//                     <div className="method-sub">{m.sub}</div>
+//                   </div>
+//                   <div className="method-eta">{m.eta}</div>
+//                   <div className="method-radio">
+//                     {method === m.id && <CheckIcon />}
+//                   </div>
+//                 </div>
+//               ))}
+//             </div>
+
+//             {/* Bank Transfer — show virtual account */}
+//             {method === 'bank_transfer' && (
+//               <>
+//                 <div className="section-label">Your Virtual Account</div>
+//                 <div className="va-card">
+//                   <div className="va-header">Transfer to this account</div>
+//                   <div className="va-row">
+//                     <span className="va-key">Account Number</span>
+//                     <div className="va-number-row">
+//                       <span className="va-number">{virtualAccount.number}</span>
+//                       <button
+//                         type="button"
+//                         className={`copy-btn ${copied ? 'copied' : ''}`}
+//                         onClick={handleCopy}
+//                       >
+//                         <CopyIcon />{copied ? 'Copied!' : 'Copy'}
+//                       </button>
+//                     </div>
+//                   </div>
+//                   <div className="va-row">
+//                     <span className="va-key">Bank</span>
+//                     <span className="va-val">{virtualAccount.bank}</span>
+//                   </div>
+//                   <div className="va-row">
+//                     <span className="va-key">Account Name</span>
+//                     <span className="va-val">{virtualAccount.name}</span>
+//                   </div>
+//                   <div className="va-note">
+//                     Transfer any amount to the account above. Your wallet balance will be credited instantly once the payment is confirmed.
+//                   </div>
+//                 </div>
+//                 <p className="info-note">No further action needed — just complete your transfer.</p>
+//               </>
+//             )}
+
+            // {/* Mobile Money */}
+            // {method === 'mobile_money' && (
+            //   <div className="fields">
+            //     <div className="field">
+            //       <label>Provider</label>
+            //       <select value={provider} onChange={e => setProvider(e.target.value)} required>
+            //         <option value="">Select provider…</option>
+            //         <option value="mtn">MTN Mobile Money</option>
+            //         <option value="airtel">Airtel Money</option>
+            //         <option value="zamtel">Zamtel Kwacha</option>
+            //       </select>
+            //     </div>
+            //     <div className="field">
+            //       <label>Mobile Number</label>
+            //       <input type="tel" placeholder="0971 000 000" value={phone} onChange={e => setPhone(e.target.value)} required />
+            //     </div>
+            //   </div>
+            // )}
+
+//             {/* Card */}
+//             {method === 'card' && (
+//               <div className="fields">
+//                 <div className="field">
+//                   <label>Card Number</label>
+//                   <input
+//                     type="text"
+//                     placeholder="0000 0000 0000 0000"
+//                     maxLength={19}
+//                     value={cardNo}
+//                     onChange={e => setCardNo(e.target.value.replace(/\D/g,'').replace(/(.{4})/g,'$1 ').trim())}
+//                     required
+//                   />
+//                 </div>
+//                 <div className="field">
+//                   <label>Cardholder Name</label>
+//                   <input type="text" placeholder="Jane Doe" value={cardName} onChange={e => setCardName(e.target.value)} required />
+//                 </div>
+//                 <div className="field-row">
+//                   <div className="field">
+//                     <label>Expiry</label>
+//                     <input type="text" placeholder="MM/YY" maxLength={5} value={expiry} onChange={e => setExpiry(e.target.value)} required />
+//                   </div>
+//                   <div className="field">
+//                     <label>CVV</label>
+//                     <input type="password" placeholder="•••" maxLength={4} value={cvv} onChange={e => setCvv(e.target.value)} required />
+//                   </div>
+//                 </div>
+//               </div>
+//             )}

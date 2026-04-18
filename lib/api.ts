@@ -46,6 +46,18 @@ export async function apiRequest(
   return data;
 }
 
+export const DashboardAPI = {
+  get: () => apiRequest('/dashboard'),
+};
+
+export const WalletAPI = {
+  deposit: (payload: { amount: number, phone: string, mno: string }) =>
+    apiRequest('/wallet/deposit', {
+      method: 'POST',
+      body: payload,
+    }),
+};
+
 // AUTH HELPERS
 
 export const AuthAPI = {
