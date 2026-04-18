@@ -7,33 +7,33 @@ import { WalletAPI } from "@/lib/api";
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const BackIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-    <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+    <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
   </svg>
 );
 const BankIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-    <rect x="3" y="10" width="18" height="11" rx="1"/><path d="M3 10l9-7 9 7"/>
-    <line x1="12" y1="10" x2="12" y2="21"/>
+    <rect x="3" y="10" width="18" height="11" rx="1" /><path d="M3 10l9-7 9 7" />
+    <line x1="12" y1="10" x2="12" y2="21" />
   </svg>
 );
 const MobileIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-    <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+    <rect x="5" y="2" width="14" height="20" rx="2" /><line x1="12" y1="18" x2="12.01" y2="18" />
   </svg>
 );
 const CardIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-    <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+    <rect x="1" y="4" width="22" height="16" rx="2" /><line x1="1" y1="10" x2="23" y2="10" />
   </svg>
 );
 const CheckIcon = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-    <polyline points="20 6 9 17 4 12"/>
+    <polyline points="20 6 9 17 4 12" />
   </svg>
 );
 const CopyIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-    <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+    <rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
   </svg>
 );
 
@@ -61,20 +61,37 @@ const methods = [
   },
 ];
 
+const networks = [
+  {
+    id: 'mtn',
+    name: 'MTN',
+    color: '#FFCC00',
+    logo: '/images/logos/mtn-logo.png',
+  },
+  {
+    id: 'airtel',
+    name: 'Airtel',
+    color: '#E60000',
+    logo: '/images/logos/airtel-logo.png',
+  },
+];
+
 const quickAmounts = [1000, 2500, 5000, 10000];
 
 export default function AddMoneyPage() {
   const router = useRouter();
-  const [method, setMethod]       = useState('mobile_money');
-  const [amount, setAmount]       = useState('');
-  const [phone, setPhone]         = useState('');
-  const [provider, setProvider]   = useState('');
-  const [cardNo, setCardNo]       = useState('');
-  const [expiry, setExpiry]       = useState('');
-  const [cvv, setCvv]             = useState('');
-  const [cardName, setCardName]   = useState('');
-  const [loading, setLoading]     = useState(false);
-  const [copied, setCopied]       = useState(false);
+  const [method, setMethod] = useState('mobile_money');
+  const [amount, setAmount] = useState('');
+  const [phone, setPhone] = useState('');
+  const [provider, setProvider] = useState('mtn');
+  const [cardNo, setCardNo] = useState('');
+  const [expiry, setExpiry] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [cardName, setCardName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const [paymentType, setPaymentType] = useState<'mobile' | 'card'>('mobile');
 
   // Replace with real wallet virtual account from API
   const virtualAccount = { number: '0123456789', bank: 'Wema Bank', name: 'Jane Doe / arc.hq' };
@@ -85,38 +102,38 @@ export default function AddMoneyPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-const handleSubmit = async (e: any) => {
-  e.preventDefault();
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
 
-  if (!amount || parseFloat(amount) <= 0) return;
+    if (!amount || parseFloat(amount) <= 0) return;
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    const res = await WalletAPI.deposit({
-      amount: parseFloat(amount),
-      phone: phone,
-      mno: provider
-    });
+    try {
+      const res = await WalletAPI.deposit({
+        amount: parseFloat(amount),
+        phone: phone,
+        mno: provider
+      });
 
-    const data = res.data;
+      const data = res.data;
 
-    // IMPORTANT: send user to Lenco checkout
-    // if (data.checkout_url) {
-    //   window.location.href = data.checkout_url;
-    //   return;
-    // }
+      // IMPORTANT: send user to Lenco checkout
+      // if (data.checkout_url) {
+      //   window.location.href = data.checkout_url;
+      //   return;
+      // }
 
-    // fallback
-    // router.push('/deposit/failed');
+      // fallback
+      // router.push('/deposit/failed');
 
-  } catch (err: any) {
-    console.error("Deposit error:", err);
-    router.push('/deposit/failed');
-  } finally {
-    setLoading(false);
-  }
-};
+    } catch (err: any) {
+      console.error("Deposit error:", err);
+      router.push('/deposit/failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -187,7 +204,7 @@ const handleSubmit = async (e: any) => {
           position: relative;
         }
         .method-item:hover { border-color: #c8c5be; }
-        .method-item.active { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
+        .method-item.active { border-color: var(--ink); box-shadow: 0 0 0 0.3px var(--ink); }
 
         .method-icon-wrap { width: 40px; height: 40px; border-radius: 12px; background: var(--bg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--muted); flex-shrink: 0; transition: all 0.13s; }
         .method-item.active .method-icon-wrap { background: var(--ink); color: #fff; border-color: var(--ink); }
@@ -261,6 +278,45 @@ const handleSubmit = async (e: any) => {
 
         /* bank transfer doesn't need submit (just show VA) */
         .info-note { font-size: 13px; color: var(--muted); text-align: center; margin-top: 8px; line-height: 1.5; }
+
+        .mno-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.mno-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mno-card img {
+  width: 100vw;
+  height: 32px;
+  object-fit: contain;
+}
+
+.mno-card span {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.mno-card:hover {
+  border-color: var(--accent);
+}
+
+.mno-card.active {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 0.3px var(--ink);
+  background: #f9f9f7;
+}
       `}</style>
 
       <div className="shell">
@@ -287,7 +343,7 @@ const handleSubmit = async (e: any) => {
                   onChange={e => setAmount(e.target.value)}
                 />
               </div>
-              <div className="quick-amounts">
+              {/* <div className="quick-amounts">
                 {quickAmounts.map(q => (
                   <button
                     type="button"
@@ -298,37 +354,135 @@ const handleSubmit = async (e: any) => {
                     ${q.toLocaleString()}
                   </button>
                 ))}
-              </div>
+              </div> */}
             </div>
 
             <div className="divider" />
 
-            {/* Mobile Money */}
-            {method === 'mobile_money' && (
-              <div className="fields">
-                <div className="field">
-                  <label>Provider</label>
-                  <select value={provider} onChange={e => setProvider(e.target.value)} required>
-                    <option value="">Select provider…</option>
-                    <option value="mtn">MTN Mobile Money</option>
-                    <option value="airtel">Airtel Money</option>
-                    <option value="zamtel">Zamtel Kwacha</option>
-                  </select>
+            <div className="section-label">Payment Type</div>
+            <div className="method-list">
+
+              <div
+                className={`method-item ${paymentType === 'mobile' ? 'active' : ''}`}
+                onClick={() => setPaymentType('mobile')}
+              >
+                <div className="method-icon-wrap"><MobileIcon /></div>
+                <div className="method-text">
+                  <div className="method-name">Mobile Money</div>
+                  <div className="method-sub">MTN, Airtel</div>
                 </div>
+                <div className="method-radio">
+                  {paymentType === 'mobile' && <CheckIcon />}
+                </div>
+              </div>
+
+              <div
+                className={`method-item ${paymentType === 'card' ? 'active' : ''}`}
+                onClick={() => setPaymentType('card')}
+              >
+                <div className="method-icon-wrap"><CardIcon /></div>
+                <div className="method-text">
+                  <div className="method-name">Card</div>
+                  <div className="method-sub">Visa / Mastercard</div>
+                </div>
+                <div className="method-radio">
+                  {paymentType === 'card' && <CheckIcon />}
+                </div>
+              </div>
+
+            </div>
+
+            {paymentType === 'mobile' && (
+              <div className="fields">
+
+                <div className="field">
+                  <label>Select Network</label>
+
+                  <div className="mno-grid">
+                    {networks.map(net => (
+                      <div
+                        key={net.id}
+                        className={`mno-card ${provider === net.id ? 'active' : ''}`}
+                        onClick={() => setProvider(net.id)}
+                      >
+                        <img src={net.logo} alt={net.name} />
+                      </div>
+                    ))}
+                  </div>
+
+                </div>
+
                 <div className="field">
                   <label>Mobile Number</label>
-                  <input type="tel" placeholder="0971 000 000" value={phone} onChange={e => setPhone(e.target.value)} required />
+                  <input
+                    type="tel"
+                    placeholder={provider === 'mtn' ? '0960 000 000' : '0970 000 000'}
+                    value={phone}
+                    onChange={e => setPhone(e.target.value)}
+                    required
+                  />
+                </div>
+
+              </div>
+            )}
+
+            {paymentType === 'card' && (
+              <div className="fields">
+                <div className="field">
+                  <label>Card Number</label>
+                  <input
+                    type="text"
+                    placeholder="0000 0000 0000 0000"
+                    value={cardNo}
+                    onChange={e =>
+                      setCardNo(
+                        e.target.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim()
+                      )
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="field">
+                  <label>Cardholder Name</label>
+                  <input
+                    type="text"
+                    value={cardName}
+                    onChange={e => setCardName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="field-row">
+                  <div className="field">
+                    <label>Expiry</label>
+                    <input
+                      type="text"
+                      placeholder="MM/YY"
+                      value={expiry}
+                      onChange={e => setExpiry(e.target.value)}
+                    />
+                  </div>
+                  <div className="field">
+                    <label>CVV</label>
+                    <input
+                      type="password"
+                      value={cvv}
+                      onChange={e => setCvv(e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
             )}
-            
-              <button type="submit" className="submit-btn" disabled={loading || !amount}>
-                {loading
-                  ? <><div className="spinner" />Processing…</>
-                  : <>Pay {amount ? `$${parseFloat(amount).toLocaleString('en', { minimumFractionDigits: 2 })}` : '$0.00'}</>
-                }
-              </button>
-          
+
+
+            <button type="submit" className="submit-btn" disabled={loading || !amount}>
+              {loading
+                ? <><div className="spinner" />Processing…</>
+                : <>Pay {amount ? `$${parseFloat(amount).toLocaleString('en', { minimumFractionDigits: 2 })}` : '$0.00'}</>
+              }
+            </button>
+
 
           </form>
         </main>
@@ -395,24 +549,24 @@ const handleSubmit = async (e: any) => {
 //               </>
 //             )}
 
-            // {/* Mobile Money */}
-            // {method === 'mobile_money' && (
-            //   <div className="fields">
-            //     <div className="field">
-            //       <label>Provider</label>
-            //       <select value={provider} onChange={e => setProvider(e.target.value)} required>
-            //         <option value="">Select provider…</option>
-            //         <option value="mtn">MTN Mobile Money</option>
-            //         <option value="airtel">Airtel Money</option>
-            //         <option value="zamtel">Zamtel Kwacha</option>
-            //       </select>
-            //     </div>
-            //     <div className="field">
-            //       <label>Mobile Number</label>
-            //       <input type="tel" placeholder="0971 000 000" value={phone} onChange={e => setPhone(e.target.value)} required />
-            //     </div>
-            //   </div>
-            // )}
+// {/* Mobile Money */}
+// {method === 'mobile_money' && (
+//   <div className="fields">
+//     <div className="field">
+//       <label>Provider</label>
+//       <select value={provider} onChange={e => setProvider(e.target.value)} required>
+//         <option value="">Select provider…</option>
+//         <option value="mtn">MTN Mobile Money</option>
+//         <option value="airtel">Airtel Money</option>
+//         <option value="zamtel">Zamtel Kwacha</option>
+//       </select>
+//     </div>
+//     <div className="field">
+//       <label>Mobile Number</label>
+//       <input type="tel" placeholder="0971 000 000" value={phone} onChange={e => setPhone(e.target.value)} required />
+//     </div>
+//   </div>
+// )}
 
 //             {/* Card */}
 //             {method === 'card' && (
